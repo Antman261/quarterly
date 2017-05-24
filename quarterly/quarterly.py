@@ -28,8 +28,8 @@ class Quarter(arrow.Arrow):
         return '%s - %s' % (self.start.isoformat(), self.end.isoformat())
 
     def __eq__(self, other):
-        if isinstance(other, (Quarter, arrow.Arrow)):
-            return self.quarter == other.quarter
+        if isinstance(other, (Quarter)):
+            return self.start._datetime == self._get_datetime(other.start)
 
         if not isinstance(other, (arrow.Arrow, datetime)):
             return False
@@ -40,40 +40,40 @@ class Quarter(arrow.Arrow):
         return not self.__eq__(other)
 
     def __gt__(self, other):
-        if isinstance(other, (Quarter, arrow.Arrow)):
-            return self.quarter > other.quarter
+        if isinstance(other, Quarter):
+            return self.start > self._get_datetime(other.end)
 
         if not isinstance(other, (arrow.Arrow, datetime)):
             self._cmperror(other)
 
-        return self._datetime > self._get_datetime(other)
+        return self.start > self._get_datetime(other)
 
     def __ge__(self, other):
-        if isinstance(other, (Quarter, arrow.Arrow)):
-            return self.quarter >= other.quarter
+        if isinstance(other, Quarter):
+            return self.start >= self._get_datetime(other.end)
 
         if not isinstance(other, (arrow.Arrow, datetime)):
             self._cmperror(other)
 
-        return self._datetime >= self._get_datetime(other)
+        return self.start >= self._get_datetime(other)
 
     def __lt__(self, other):
-        if isinstance(other, (Quarter, arrow.Arrow)):
-            return self.quarter < other.quarter
+        if isinstance(other, Quarter):
+            return self.end < self._get_datetime(other.start)
 
         if not isinstance(other, (arrow.Arrow, datetime)):
             self._cmperror(other)
 
-        return self._datetime < self._get_datetime(other)
+        return self.end < self._get_datetime(other)
 
     def __le__(self, other):
-        if isinstance(other, (Quarter, arrow.Arrow)):
-            return self.quarter <= other.quarter
+        if isinstance(other, Quarter):
+            return self.end <= self._get_datetime(other.start)
 
         if not isinstance(other, (arrow.Arrow, datetime)):
             self._cmperror(other)
 
-        return self._datetime <= self._get_datetime(other)
+        return self.end <= self._get_datetime(other)
 
     def __iter__(self):
         return self
@@ -98,6 +98,8 @@ class Quarter(arrow.Arrow):
     def elapsed(self):
         """The number of complete days since the start of the quarter."""
         return len(self.span_range('day', self.start, self))-1  # Do not include today
+
+    # Should: elapsed + remaining == days
 
 
 class QuarterFactory(arrow.ArrowFactory):
